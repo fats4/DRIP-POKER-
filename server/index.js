@@ -4,6 +4,7 @@ import { networkInterfaces } from 'os';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import { RoomManager } from './game/RoomManager.js';
+import { decideBotAction } from './game/BotAI.js';
 
 function getLocalAddresses() {
   const addresses = [];
@@ -51,15 +52,35 @@ function broadcastRoomList() {
 
 setInterval(() => {
   for (const room of roomManager.rooms.values()) {
+    let changed = false;
+
     if (room.game.phase !== 'waiting' && room.game.phase !== 'showdown') {
-      const before = room.game.activeIndex;
-      room.game.handleTimeout();
-      if (room.game.activeIndex !== before || room.game.phase === 'showdown') {
-        broadcastRoom(room);
+      const activeSeat = room.seats[room.game.activeIndex];
+
+      if (activeSeat?.player?.isBot) {
+        if (!room.botThinkUntil) {
+          room.botThinkUntil = Date.now() + 800 + Math.random() * 1200;
+        } else if (Date.now() >= room.botThinkUntil) {
+          room.botThinkUntil = null;
+          const decision = decideBotAction(room.game, room.game.activeIndex);
+          room.game.processAction(activeSeat.player.id, decision.action, decision.amount || 0);
+          changed = true;
+        }
+      } else {
+        room.botThinkUntil = null;
+        const before = room.game.activeIndex;
+        room.game.handleTimeout();
+        if (room.game.activeIndex !== before || room.game.phase === 'showdown') {
+          changed = true;
+        }
       }
+    } else {
+      room.botThinkUntil = null;
     }
+
+    if (changed) broadcastRoom(room);
   }
-}, 1000);
+}, 500);
 
 io.on('connection', (socket) => {
   const playerId = socket.id;
@@ -97,6 +118,26 @@ io.on('connection', (socket) => {
     cb?.(result);
     if (room) broadcastRoom(room);
     broadcastRoomList();
+  });
+
+  socket.on('addBot', (_data, cb) => {
+    const room = roomManager.getRoomForPlayer(playerId);
+    if (!room) return cb?.({ ok: false, error: 'Not in a room' });
+    if (room.hostId !== playerId) return cb?.({ ok: false, error: 'Only the host can add bots' });
+
+    const result = room.addBot();
+    cb?.({ ok: result.ok, error: result.error, room: room.toPublicInfo() });
+    if (result.ok) broadcastRoom(room);
+  });
+
+  socket.on('removeBot', (_data, cb) => {
+    const room = roomManager.getRoomForPlayer(playerId);
+    if (!room) return cb?.({ ok: false, error: 'Not in a room' });
+    if (room.hostId !== playerId) return cb?.({ ok: false, error: 'Only the host can remove bots' });
+
+    const result = room.removeBot();
+    cb?.({ ok: result.ok, error: result.error, room: room.toPublicInfo() });
+    if (result.ok) broadcastRoom(room);
   });
 
   socket.on('startGame', (_data, cb) => {

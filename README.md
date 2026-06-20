@@ -9,6 +9,7 @@ Built with **Vite + React** (frontend) and **Express + Socket.io** (backend).
 - Full Texas Hold'em betting (fold, check, call, raise, all-in)
 - Real-time multiplayer via WebSocket
 - Configurable table size (1–10 seats)
+- **AI bot players** — host can add/remove bots for solo or practice games
 - Automatic hand evaluation (pair through royal flush)
 - Modern poker table UI with cards and chips
 - Blinds 10/20, starting chips 1,000
@@ -51,7 +52,7 @@ Output is written to `client/dist/`.
 2. Enter your name
 3. **Create Table** — choose seat count (1–10), or **Join Table** with a room code
 4. Share the room code with friends (open another browser tab)
-5. Host clicks **Start Game** (minimum 2 players)
+5. Host clicks **Start Game** (minimum 2 players — add bots if playing solo)
 6. Play poker!
 
 ## Multiplayer Testing

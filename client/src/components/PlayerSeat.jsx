@@ -1,7 +1,7 @@
 import Card from './Card';
 
 export default function PlayerSeat({ seat, isMe, position }) {
-  const { name, chips, currentBet, hasFolded, isAllIn, lastAction, holeCards, isDealer, isActive, handResult, occupied } = seat;
+  const { name, chips, currentBet, hasFolded, isAllIn, lastAction, holeCards, isDealer, isActive, handResult, occupied, isBot } = seat;
 
   if (!occupied) {
     return (
@@ -38,6 +38,7 @@ export default function PlayerSeat({ seat, isMe, position }) {
           <div className="font-semibold text-sm truncate max-w-[90px]">
             {name}{isMe && ' (You)'}
           </div>
+          {isBot && <div className="text-blue-400 text-[10px] font-bold uppercase tracking-wide">AI</div>}
           <div className="text-gold-light text-xs font-mono">{chips?.toLocaleString()} chips</div>
           {isAllIn && <div className="text-red-400 text-xs font-bold">ALL IN</div>}
           {handResult && <div className="text-green-400 text-xs">{handResult}</div>}

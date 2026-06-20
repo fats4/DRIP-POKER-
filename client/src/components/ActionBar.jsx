@@ -1,11 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function ActionBar({ gameState, playerId, onAction, onNextHand, isHost }) {
   const [raiseAmount, setRaiseAmount] = useState(40);
+  const [secondsLeft, setSecondsLeft] = useState(null);
   const mySeat = gameState?.seats?.find((s) => s.playerId === playerId);
   const isMyTurn = mySeat && gameState.activeIndex === mySeat.index;
   const callAmount = mySeat ? gameState.currentBet - mySeat.currentBet : 0;
   const canAct = isMyTurn && !mySeat?.hasFolded && !mySeat?.isAllIn && gameState.phase !== 'showdown' && gameState.phase !== 'waiting';
+
+  useEffect(() => {
+    if (!gameState.actionDeadline || !canAct) {
+      setSecondsLeft(null);
+      return;
+    }
+    const tick = () => {
+      const left = Math.max(0, Math.ceil((gameState.actionDeadline - Date.now()) / 1000));
+      setSecondsLeft(left);
+    };
+    tick();
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+  }, [gameState.actionDeadline, canAct]);
 
   if (gameState.phase === 'showdown') {
     return (
@@ -35,6 +50,12 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
   }
 
   return (
+    <div className="flex flex-col items-center gap-2">
+      {secondsLeft !== null && (
+        <div className={`text-sm font-mono ${secondsLeft <= 5 ? 'text-red-400' : 'text-white/50'}`}>
+          Time left: {secondsLeft}s
+        </div>
+      )}
     <div className="flex flex-wrap items-center justify-center gap-3 p-4 bg-gray-900/80 rounded-2xl border border-white/10">
       <button
         onClick={() => onAction('fold')}
@@ -82,6 +103,7 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
       >
         All In
       </button>
+    </div>
     </div>
   );
 }

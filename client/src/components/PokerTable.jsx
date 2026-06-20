@@ -25,7 +25,7 @@ const PHASE_LABELS = {
   showdown: 'Showdown',
 };
 
-export default function PokerTable({ gameState, room, playerId, isHost, onAction, onStart, onNextHand, onLeave }) {
+export default function PokerTable({ gameState, room, playerId, isHost, onAction, onStart, onNextHand, onLeave, onAddBot, onRemoveBot }) {
   const maxSeats = room?.maxSeats || gameState.seats.length;
   const positions = SEAT_POSITIONS[maxSeats] || SEAT_POSITIONS[6];
 
@@ -36,6 +36,7 @@ export default function PokerTable({ gameState, room, playerId, isHost, onAction
           <h1 className="text-xl font-display text-gold">{room?.name || 'PokerLabs'}</h1>
           <p className="text-white/50 text-sm">
             Room: {room?.id} · {room?.playerCount}/{room?.maxSeats} players
+            {room?.botCount > 0 && ` · ${room.botCount} bot${room.botCount > 1 ? 's' : ''}`}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -43,12 +44,28 @@ export default function PokerTable({ gameState, room, playerId, isHost, onAction
             {PHASE_LABELS[gameState.phase] || gameState.phase}
           </span>
           {gameState.phase === 'waiting' && isHost && (
-            <button
-              onClick={onStart}
-              className="px-5 py-2 bg-gold hover:bg-gold-light text-gray-900 font-bold rounded-xl transition"
-            >
-              Start Game
-            </button>
+            <>
+              <button
+                onClick={onAddBot}
+                className="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded-xl text-sm font-medium transition"
+              >
+                + Add Bot
+              </button>
+              {(room?.botCount ?? 0) > 0 && (
+                <button
+                  onClick={onRemoveBot}
+                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-sm font-medium transition"
+                >
+                  − Remove Bot
+                </button>
+              )}
+              <button
+                onClick={onStart}
+                className="px-5 py-2 bg-gold hover:bg-gold-light text-gray-900 font-bold rounded-xl transition"
+              >
+                Start Game
+              </button>
+            </>
           )}
           <button
             onClick={onLeave}

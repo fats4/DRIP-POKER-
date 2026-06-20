@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { PokerGame, STARTING_CHIPS } from './PokerGame.js';
+import { BOT_NAMES } from './BotAI.js';
 
 export class Room {
   constructor(id, name, maxSeats, hostId) {
@@ -39,6 +40,7 @@ export class Room {
       id: playerId,
       name: playerName,
       chips: STARTING_CHIPS,
+      isBot: false,
     };
 
     return { ok: true, seatIndex };
@@ -56,11 +58,52 @@ export class Room {
     this.seats[idx].holeCards = [];
 
     if (this.hostId === playerId) {
-      const remaining = this.seats.find((s) => s.player);
-      this.hostId = remaining?.player?.id || null;
+      const human = this.seats.find((s) => s.player && !s.player.isBot);
+      this.hostId = human?.player?.id || this.seats.find((s) => s.player)?.player?.id || null;
     }
 
     return { ok: true };
+  }
+
+  addBot() {
+    if (this.game.phase !== 'waiting') {
+      return { ok: false, error: 'Can only add bots while waiting' };
+    }
+
+    const seatIndex = this.seats.findIndex((s) => !s.player);
+    if (seatIndex < 0) return { ok: false, error: 'Table is full' };
+
+    const botCount = this.seats.filter((s) => s.player?.isBot).length;
+    const name = `Bot ${BOT_NAMES[botCount % BOT_NAMES.length]}`;
+
+    this.seats[seatIndex].player = {
+      id: `bot-${uuidv4()}`,
+      name,
+      chips: STARTING_CHIPS,
+      isBot: true,
+    };
+
+    return { ok: true, seatIndex };
+  }
+
+  removeBot() {
+    if (this.game.phase !== 'waiting') {
+      return { ok: false, error: 'Can only remove bots while waiting' };
+    }
+
+    for (let i = this.seats.length - 1; i >= 0; i--) {
+      if (this.seats[i].player?.isBot) {
+        this.seats[i].player = null;
+        this.seats[i].holeCards = [];
+        return { ok: true };
+      }
+    }
+
+    return { ok: false, error: 'No bots at the table' };
+  }
+
+  getBotCount() {
+    return this.seats.filter((s) => s.player?.isBot).length;
   }
 
   getPlayerSeat(playerId) {
@@ -77,6 +120,7 @@ export class Room {
       name: this.name,
       maxSeats: this.maxSeats,
       playerCount: this.getPlayerCount(),
+      botCount: this.getBotCount(),
       hostId: this.hostId,
       phase: this.game.phase,
     };

@@ -422,6 +422,7 @@ export class PokerGame {
         playerId: seat.player?.id || null,
         name: seat.player?.name || null,
         chips: seat.player?.chips ?? 0,
+        isBot: seat.player?.isBot ?? false,
         currentBet: seat.currentBet,
         hasFolded: seat.hasFolded,
         isAllIn: seat.isAllIn,

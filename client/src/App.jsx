@@ -70,6 +70,18 @@ export default function App() {
     await emit('nextHand', {});
   }, [emit]);
 
+  const handleAddBot = useCallback(async () => {
+    const result = await emit('addBot', {});
+    if (result?.ok && result.room) setRoom(result.room);
+    else if (!result?.ok) setError(result?.error || 'Failed to add bot');
+  }, [emit]);
+
+  const handleRemoveBot = useCallback(async () => {
+    const result = await emit('removeBot', {});
+    if (result?.ok && result.room) setRoom(result.room);
+    else if (!result?.ok) setError(result?.error || 'Failed to remove bot');
+  }, [emit]);
+
   if (view === 'table' && room) {
     return (
       <PokerTable
@@ -81,6 +93,8 @@ export default function App() {
         onStart={handleStart}
         onNextHand={handleNextHand}
         onLeave={handleLeave}
+        onAddBot={handleAddBot}
+        onRemoveBot={handleRemoveBot}
       />
     );
   }
