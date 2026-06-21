@@ -62,7 +62,7 @@ export default function PlayerSeat({
       <div className="relative w-0 h-0">
         {/* Nameplate — outward from table */}
         <div
-          className={`absolute z-20 w-[92px] rounded border px-2 py-1 shadow-md pointer-events-auto ${plateClass} ${hasFolded ? 'opacity-45' : ''}`}
+          className={`absolute z-20 w-[88px] sm:w-[92px] rounded border px-2 py-1 shadow-md pointer-events-auto ${plateClass} ${hasFolded ? 'opacity-45' : ''}`}
           style={structure.badge}
         >
           <span className="absolute top-0.5 left-1 text-[8px] text-white/20 font-mono">{seatNumber}</span>
@@ -70,13 +70,13 @@ export default function PlayerSeat({
             <span className="absolute top-0.5 right-1 text-[7px] bg-amber-500/20 text-amber-300 px-1 rounded font-mono">D</span>
           )}
           <div className="pt-1.5 text-center leading-none">
-            <div className="text-[10px] font-semibold text-white truncate">
+            <div className="text-[11px] sm:text-[10px] font-semibold text-white truncate">
               {name}{isHero && <span className="text-emerald-400"> ★</span>}
             </div>
             {isBot && <div className="text-[7px] text-white/30 uppercase mt-0.5">Bot</div>}
-            <div className="text-[12px] font-bold text-white font-mono mt-0.5">{chips?.toLocaleString()}</div>
+            <div className="text-[13px] sm:text-[12px] font-bold text-white font-mono mt-0.5">{chips?.toLocaleString()}</div>
             {statusText && (
-              <div className={`text-[8px] mt-0.5 uppercase tracking-wide truncate ${isActive ? 'text-amber-300' : 'text-white/35'}`}>
+              <div className={`text-[9px] sm:text-[8px] mt-0.5 uppercase tracking-wide truncate ${isActive ? 'text-amber-300' : 'text-white/35'}`}>
                 {statusText}
               </div>
             )}

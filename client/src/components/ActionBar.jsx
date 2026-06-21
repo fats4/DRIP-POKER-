@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 
-const BTN = 'px-5 py-2 text-sm rounded font-bold uppercase tracking-wide transition';
+const BTN =
+  'min-h-[44px] px-3 sm:px-5 py-2.5 text-xs sm:text-sm rounded-lg font-bold uppercase tracking-wide transition active:scale-[0.98]';
+const BTN_MOBILE = `${BTN} w-full`;
 
 export default function ActionBar({ gameState, playerId, onAction, onNextHand, isHost }) {
   const [raiseAmount, setRaiseAmount] = useState(40);
@@ -27,10 +29,10 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
 
   if (gameState.phase === 'showdown') {
     return (
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
         <p className="text-white/70 text-sm text-center">{gameState.winMessage}</p>
         {isHost && (
-          <button type="button" onClick={onNextHand} className={`${BTN} bg-emerald-600 hover:bg-emerald-500 text-white shrink-0`}>
+          <button type="button" onClick={onNextHand} className={`${BTN} bg-emerald-600 hover:bg-emerald-500 text-white shrink-0 w-full sm:w-auto`}>
             Next Hand
           </button>
         )}
@@ -41,20 +43,58 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
 
   if (!canAct) {
     return (
-      <div className="text-center text-white/35 py-1 text-sm">
+      <div className="text-center text-white/35 py-2 text-sm max-w-lg mx-auto">
         {mySeat?.hasFolded ? 'You folded — watching the hand' : 'Waiting for other players...'}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-2 w-full max-w-lg mx-auto">
       {secondsLeft !== null && (
-        <div className={`font-mono text-lg font-bold ${secondsLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white/50'}`}>
+        <div className={`font-mono text-xl sm:text-lg font-bold ${secondsLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white/50'}`}>
           {secondsLeft}s
         </div>
       )}
-      <div className="flex flex-wrap items-center justify-center gap-2">
+
+      {/* Mobile: 3-column grid + full-width all-in */}
+      <div className="grid grid-cols-3 gap-2 w-full sm:hidden">
+        <button type="button" onClick={() => onAction('fold')} className={`${BTN_MOBILE} bg-[#3a3a3a] hover:bg-[#4a4a4a] text-white border border-white/10`}>
+          Fold
+        </button>
+
+        {callAmount === 0 ? (
+          <button type="button" onClick={() => onAction('check')} className={`${BTN_MOBILE} bg-emerald-600 hover:bg-emerald-500 text-white`}>
+            Check
+          </button>
+        ) : (
+          <button type="button" onClick={() => onAction('call')} className={`${BTN_MOBILE} bg-emerald-600 hover:bg-emerald-500 text-white text-[11px]`}>
+            Call {callAmount}
+          </button>
+        )}
+
+        <button type="button" onClick={() => onAction('raise', raiseAmount)} className={`${BTN_MOBILE} bg-emerald-600 hover:bg-emerald-500 text-white`}>
+          Raise
+        </button>
+
+        <div className="col-span-3 flex items-center gap-2">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={raiseAmount}
+            onChange={(e) => setRaiseAmount(Math.max(gameState.minRaise, parseInt(e.target.value) || 0))}
+            min={gameState.minRaise}
+            step={10}
+            className="flex-1 min-h-[44px] px-3 py-2 text-base rounded-lg bg-[#2a2a2a] border border-white/15 text-white text-center focus:outline-none focus:border-emerald-500 font-mono"
+          />
+          <button type="button" onClick={() => onAction('all-in')} className={`${BTN} flex-1 bg-emerald-700 hover:bg-emerald-600 text-white`}>
+            All In
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop: inline row */}
+      <div className="hidden sm:flex flex-wrap items-center justify-center gap-2">
         <button type="button" onClick={() => onAction('fold')} className={`${BTN} bg-[#3a3a3a] hover:bg-[#4a4a4a] text-white border border-white/10`}>
           Fold
         </button>
@@ -76,7 +116,7 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
             onChange={(e) => setRaiseAmount(Math.max(gameState.minRaise, parseInt(e.target.value) || 0))}
             min={gameState.minRaise}
             step={10}
-            className="w-16 px-2 py-2 text-sm rounded bg-[#2a2a2a] border border-white/15 text-white text-center focus:outline-none focus:border-emerald-500 font-mono"
+            className="w-16 px-2 py-2 text-sm rounded-lg bg-[#2a2a2a] border border-white/15 text-white text-center focus:outline-none focus:border-emerald-500 font-mono"
           />
           <button type="button" onClick={() => onAction('raise', raiseAmount)} className={`${BTN} bg-emerald-600 hover:bg-emerald-500 text-white`}>
             Raise

@@ -5,6 +5,11 @@
 body {
   font-family: 'Inter', system-ui, sans-serif;
   background-color: #141414;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.safe-top {
+  padding-top: max(0.625rem, env(safe-area-inset-top));
 }
 
 #root {

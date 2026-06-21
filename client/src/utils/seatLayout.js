@@ -1,15 +1,15 @@
-/** Ring anchors — index 0 = bottom (hero), 1–9 = arc around the table. */
+/** Ring anchors on octagonal DRIPSTER table — index 0 = bottom (hero). */
 const RING = [
-  { left: 50, top: 91 },
-  { left: 14, top: 81 },
-  { left: 3, top: 54 },
-  { left: 8, top: 22 },
-  { left: 30, top: 5 },
-  { left: 50, top: 3 },
-  { left: 70, top: 5 },
-  { left: 92, top: 22 },
-  { left: 97, top: 54 },
-  { left: 86, top: 81 },
+  { left: 50, top: 86 },
+  { left: 16, top: 76 },
+  { left: 5, top: 52 },
+  { left: 10, top: 24 },
+  { left: 28, top: 10 },
+  { left: 50, top: 7 },
+  { left: 72, top: 10 },
+  { left: 90, top: 24 },
+  { left: 95, top: 52 },
+  { left: 84, top: 76 },
 ];
 
 const ARC_INDICES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -85,8 +85,8 @@ export function getSeatStructure(style, isHero = false) {
   const { dx, dy } = directionFromCenter(style.left, style.top);
   const outwardX = -dx;
   const outwardY = -dy;
-  const badgeDist = 18;
-  const cardDist = isHero ? 48 : 34;
+  const badgeDist = 22;
+  const cardDist = isHero ? 38 : 26;
   const horizontalCards = Math.abs(dx) > Math.abs(dy);
 
   return {

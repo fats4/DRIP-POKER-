@@ -46,28 +46,44 @@ export default function PokerTable({
   };
 
   return (
-    <div className="h-dvh bg-[#141414] text-white relative overflow-hidden select-none">
-      <div className="absolute top-0 left-0 right-0 z-40 flex items-start justify-between px-4 py-3 pointer-events-none">
-        <div className="pointer-events-auto">
-          <div className="text-lg font-bold tracking-tight text-white/90">
+    <div className="h-dvh bg-black text-white relative overflow-hidden select-none">
+      <div className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 pointer-events-none safe-top">
+        <div className="pointer-events-auto flex items-center gap-2 min-w-0">
+          <div className="text-base sm:text-lg font-bold tracking-tight text-white/90 truncate">
             DRIPSTER<span className="text-white/40 font-normal"> POKER</span>
           </div>
         </div>
-        <div className="text-right text-[11px] text-white/50 space-y-0.5 pointer-events-auto">
-          <div>
-            OWNER: <span className="text-white/80 uppercase">{hostSeat?.name || 'Host'}</span>
+
+        <div className="pointer-events-auto flex items-center gap-2 shrink-0">
+          <div className="hidden sm:block text-right text-[11px] text-white/50 space-y-0.5">
+            <div>
+              OWNER: <span className="text-white/80 uppercase">{hostSeat?.name || 'Host'}</span>
+            </div>
+            <div className="font-mono">
+              NLH ~ 10 / 20 · {room?.name || 'Table'} · {PHASE_LABELS[gameState.phase]}
+            </div>
+            <div className="text-white/30 font-mono">
+              {room?.id} · {room?.playerCount}/{totalSeats}
+              {room?.botCount > 0 && ` · ${room.botCount} bots`}
+            </div>
           </div>
-          <div className="font-mono">
-            NLH ~ 10 / 20 · {room?.name || 'Table'} · {PHASE_LABELS[gameState.phase]}
+          <div className="sm:hidden flex flex-col items-end gap-1 text-[10px] text-white/45 font-mono leading-tight">
+            <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+              {PHASE_LABELS[gameState.phase]} · {room?.playerCount}/{totalSeats}
+            </span>
+            <span className="text-white/30 truncate max-w-[9rem]">{room?.id}</span>
           </div>
-          <div className="text-white/30 font-mono">
-            {room?.id} · {room?.playerCount}/{totalSeats}
-            {room?.botCount > 0 && ` · ${room.botCount} bots`}
-          </div>
+          <button
+            type="button"
+            onClick={onLeave}
+            className="sm:hidden px-3 py-1.5 rounded-lg bg-[#2a2a2a] border border-white/10 text-[10px] font-semibold uppercase tracking-wide text-white/70"
+          >
+            Leave
+          </button>
         </div>
       </div>
 
-      <div className="absolute left-3 top-20 z-40 flex flex-col gap-3 pointer-events-auto">
+      <div className="absolute left-3 top-16 z-40 hidden sm:flex flex-col gap-3 pointer-events-auto">
         <SidebarBtn label="Leave" onClick={onLeave} />
         {isWaiting && isHost && (
           <>
@@ -77,32 +93,47 @@ export default function PokerTable({
         )}
       </div>
 
-      <div className="absolute inset-0 flex items-center justify-center p-6 pt-14 pb-28">
-        <div ref={tableRef} className="relative w-full h-full max-w-4xl max-h-[min(100%,720px)] aspect-[16/10]">
-          <div className="absolute inset-[2%] rounded-[50%] bg-[#0d0d0d] shadow-[0_8px_40px_rgba(0,0,0,0.6)]" />
+      {isWaiting && isHost && (
+        <div className="absolute right-3 top-16 z-40 flex sm:hidden gap-2 pointer-events-auto">
+          <MobileIconBtn label="+ Bot" onClick={onAddBot} />
+          {(room?.botCount ?? 0) > 0 && <MobileIconBtn label="− Bot" onClick={onRemoveBot} />}
+        </div>
+      )}
 
-          <div className="absolute inset-[6%] rounded-[50%] pn-felt border-[6px] border-[#0a0a0a] z-10">
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-[8%]">
-              {!isWaiting && gameState.pot > 0 && (
-                <div className="px-4 py-1 rounded-full bg-black/55 border border-white/15 shadow-lg">
-                  <span className="text-white text-base font-mono font-bold tracking-wide">
-                    {gameState.pot.toLocaleString()}
-                  </span>
-                </div>
-              )}
-              {!isWaiting && gameState.communityCards?.length > 0 && (
-                <div className="flex gap-1 sm:gap-1.5 items-end justify-center flex-nowrap w-full max-w-[92%]">
-                  {gameState.communityCards.map((card, i) => (
-                    <div key={i} className="board-card-deal shrink-0" style={{ animationDelay: `${i * 80}ms` }}>
-                      <Card card={card} size="board" />
-                    </div>
-                  ))}
-                </div>
-              )}
-              {gameState.handNumber > 0 && !isWaiting && (
-                <span className="text-white/35 text-xs font-mono tracking-wide">Hand #{gameState.handNumber}</span>
-              )}
-            </div>
+      <div className="absolute inset-0 flex items-center justify-center px-2 pt-12 pb-[10.5rem] sm:p-6 sm:pt-14 sm:pb-28">
+        <div
+          ref={tableRef}
+          className="relative w-full max-w-[min(100%,34rem)] sm:max-w-4xl aspect-[1024/754]"
+        >
+          <img
+            src="/poker-table.png"
+            alt=""
+            className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none drop-shadow-[0_12px_40px_rgba(0,0,0,0.55)]"
+            draggable={false}
+          />
+
+          <div className="absolute inset-[22%_18%_28%_18%] z-10 flex flex-col items-center justify-center gap-1.5 sm:gap-2">
+            {!isWaiting && gameState.pot > 0 && (
+              <div className="px-3 sm:px-4 py-0.5 sm:py-1 rounded-full bg-black/60 border border-white/15 shadow-lg">
+                <span className="text-white text-sm sm:text-base font-mono font-bold tracking-wide">
+                  {gameState.pot.toLocaleString()}
+                </span>
+              </div>
+            )}
+            {!isWaiting && gameState.communityCards?.length > 0 && (
+              <div className="flex gap-1 sm:gap-1.5 items-end justify-center flex-nowrap w-full max-w-full">
+                {gameState.communityCards.map((card, i) => (
+                  <div key={i} className="board-card-deal shrink-0" style={{ animationDelay: `${i * 80}ms` }}>
+                    <Card card={card} size="board" />
+                  </div>
+                ))}
+              </div>
+            )}
+            {gameState.handNumber > 0 && !isWaiting && (
+              <span className="text-white/50 text-[10px] sm:text-xs font-mono tracking-wide drop-shadow-md">
+                Hand #{gameState.handNumber}
+              </span>
+            )}
           </div>
 
           {isWaiting && (
@@ -186,7 +217,7 @@ export default function PokerTable({
       </div>
 
       {!isWaiting && (
-        <div className="absolute bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-2 bg-gradient-to-t from-black/80 to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 z-40 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pb-4 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
           <ActionBar
             gameState={gameState}
             playerId={playerId}
@@ -197,7 +228,7 @@ export default function PokerTable({
         </div>
       )}
 
-      <div className="absolute bottom-4 left-4 z-30 max-w-xs pointer-events-none">
+      <div className="absolute bottom-4 left-4 z-30 max-w-xs pointer-events-none hidden sm:block">
         <div className="bg-black/40 rounded px-3 py-2 text-[11px] text-white/35 font-mono">
           {isWaiting ? 'DRIPSTER deck · Blinds 10/20' : gameState.winMessage || `Phase: ${PHASE_LABELS[gameState.phase]}`}
         </div>
@@ -216,6 +247,18 @@ function SidebarBtn({ label, onClick }) {
       <span className="w-9 h-9 rounded-full bg-[#2a2a2a] border border-white/10 flex items-center justify-center text-xs text-white/60">
         {label.charAt(0)}
       </span>
+      {label}
+    </button>
+  );
+}
+
+function MobileIconBtn({ label, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="px-3 py-1.5 rounded-lg bg-[#2a2a2a] border border-white/10 text-[10px] font-semibold uppercase tracking-wide text-white/70"
+    >
       {label}
     </button>
   );
