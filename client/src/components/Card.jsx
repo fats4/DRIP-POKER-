@@ -1,29 +1,56 @@
-const SUIT_SYMBOLS = { h: '♥', d: '♦', c: '♣', s: '♠' };
-const SUIT_COLORS = { h: 'text-red-500', d: 'text-red-500', c: 'text-gray-900', s: 'text-gray-900' };
+import { getCardImageSrc, getCardBackSrc } from '../utils/cardImages';
 
-export default function Card({ card, small = false }) {
+const SIZES = {
+  xs: 'w-[clamp(2rem,4.5vw,2.75rem)] aspect-[5/7]',
+  sm: 'w-[clamp(2.75rem,6vw,4rem)] aspect-[5/7]',
+  md: 'w-[clamp(3.25rem,7.5vw,5rem)] aspect-[5/7]',
+  lg: 'w-[clamp(4rem,9vw,6.25rem)] aspect-[5/7]',
+  xl: 'w-[clamp(4.75rem,11vw,7.5rem)] aspect-[5/7]',
+  board: 'w-[clamp(3.5rem,8.5vw,6.5rem)] aspect-[5/7]',
+};
+
+export default function Card({ card, size = 'md', small = false }) {
+  const sizeClass = small ? SIZES.sm : SIZES[size] || SIZES.md;
+
   if (!card) return null;
 
   if (card.hidden) {
     return (
       <div
-        className={`${small ? 'w-10 h-14' : 'w-14 h-20'} rounded-lg bg-gradient-to-br from-blue-800 to-blue-950 border-2 border-blue-600 flex items-center justify-center card-deal shadow-lg`}
+        className={`${sizeClass} rounded-lg overflow-hidden card-deal shadow-lg shadow-black/50 ring-1 ring-black/20`}
       >
-        <div className="w-6 h-8 rounded border border-blue-400/30 bg-blue-700/50" />
+        <img
+          src={getCardBackSrc()}
+          alt="Card back"
+          className="w-full h-full object-cover"
+          draggable={false}
+        />
       </div>
     );
   }
 
-  const size = small ? 'w-10 h-14 text-xs' : 'w-14 h-20 text-sm';
-  const isRed = card.suit === 'h' || card.suit === 'd';
+  const src = getCardImageSrc(card.rank, card.suit);
+
+  if (!src) {
+    return (
+      <div className={`${sizeClass} rounded-lg bg-drip-cream flex items-center justify-center text-drip-purple font-bold card-deal`}>
+        {card.rank}
+      </div>
+    );
+  }
 
   return (
     <div
-      className={`${size} rounded-lg bg-white border border-gray-300 flex flex-col items-center justify-between py-1 px-1 card-deal shadow-lg ${isRed ? 'text-red-600' : 'text-gray-900'}`}
+      className={`${sizeClass} rounded-lg overflow-hidden card-deal shadow-lg shadow-black/50 ring-1 ring-black/20 hover:ring-drip-purple/50 transition-shadow`}
     >
-      <span className="font-bold leading-none">{card.rank}</span>
-      <span className={`text-lg leading-none ${SUIT_COLORS[card.suit]}`}>{SUIT_SYMBOLS[card.suit]}</span>
-      <span className="font-bold leading-none rotate-180">{card.rank}</span>
+      <img
+        src={src}
+        alt={`${card.rank}${card.suit}`}
+        className="w-full h-full object-cover"
+        draggable={false}
+      />
     </div>
   );
 }
+
+export { getCardBackSrc };

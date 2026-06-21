@@ -1,23 +1,12 @@
+import { useMemo, useRef } from 'react';
 import Card from './Card';
 import PlayerSeat from './PlayerSeat';
 import ActionBar from './ActionBar';
-
-// Seat positions around an oval table (percentage-based)
-const SEAT_POSITIONS = {
-  1: ['bottom-[8%] left-1/2'],
-  2: ['bottom-[8%] left-1/2', 'top-[12%] left-1/2'],
-  3: ['bottom-[8%] left-1/2', 'top-[8%] left-[25%]', 'top-[8%] left-[75%]'],
-  4: ['bottom-[8%] left-1/2', 'top-[50%] left-[4%]', 'top-[12%] left-1/2', 'top-[50%] left-[96%]'],
-  5: ['bottom-[8%] left-1/2', 'bottom-[30%] left-[8%]', 'top-[12%] left-[20%]', 'top-[12%] left-[80%]', 'bottom-[30%] left-[92%]'],
-  6: ['bottom-[8%] left-1/2', 'bottom-[25%] left-[6%]', 'top-[15%] left-[15%]', 'top-[15%] left-[85%]', 'bottom-[25%] left-[94%]', 'top-[50%] left-[96%]'],
-  7: ['bottom-[8%] left-1/2', 'bottom-[22%] left-[5%]', 'top-[10%] left-[12%]', 'top-[5%] left-1/2', 'top-[10%] left-[88%]', 'bottom-[22%] left-[95%]', 'top-[50%] left-[97%]'],
-  8: ['bottom-[8%] left-1/2', 'bottom-[20%] left-[4%]', 'top-[50%] left-[2%]', 'top-[8%] left-[18%]', 'top-[8%] left-[82%]', 'top-[50%] left-[98%]', 'bottom-[20%] left-[96%]', 'bottom-[35%] left-[98%]'],
-  9: ['bottom-[8%] left-1/2', 'bottom-[18%] left-[3%]', 'top-[45%] left-[1%]', 'top-[8%] left-[15%]', 'top-[3%] left-1/2', 'top-[8%] left-[85%]', 'top-[45%] left-[99%]', 'bottom-[18%] left-[97%]', 'bottom-[35%] left-[99%]'],
-  10: ['bottom-[8%] left-1/2', 'bottom-[16%] left-[2%]', 'bottom-[40%] left-[1%]', 'top-[12%] left-[10%]', 'top-[3%] left-[30%]', 'top-[3%] left-[70%]', 'top-[12%] left-[90%]', 'bottom-[40%] left-[99%]', 'bottom-[16%] left-[98%]', 'top-[50%] left-[99%]'],
-};
+import TableChipLayer from './TableChipLayer';
+import { buildSeatLayout, seatPosToStyle } from '../utils/seatLayout';
 
 const PHASE_LABELS = {
-  waiting: 'Waiting for Players',
+  waiting: 'Waiting',
   preflop: 'Pre-Flop',
   flop: 'Flop',
   turn: 'Turn',
@@ -25,105 +14,209 @@ const PHASE_LABELS = {
   showdown: 'Showdown',
 };
 
-export default function PokerTable({ gameState, room, playerId, isHost, onAction, onStart, onNextHand, onLeave, onAddBot, onRemoveBot }) {
-  const maxSeats = room?.maxSeats || gameState.seats.length;
-  const positions = SEAT_POSITIONS[maxSeats] || SEAT_POSITIONS[6];
+export default function PokerTable({
+  gameState,
+  room,
+  playerId,
+  isHost,
+  onAction,
+  onStart,
+  onNextHand,
+  onLeave,
+  onAddBot,
+  onRemoveBot,
+}) {
+  const totalSeats = room?.maxSeats || gameState.seats.length;
+  const heroSeatIndex = gameState.seats.findIndex((s) => s.playerId === playerId);
+  const hostSeat = gameState.seats.find((s) => s.playerId === room?.hostId);
+  const isWaiting = gameState.phase === 'waiting';
+  const canStart = (room?.playerCount ?? 0) >= 2;
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}?room=${room?.id}` : '';
+  const tableRef = useRef(null);
+
+  const { positionMap, displayOrder } = useMemo(
+    () => buildSeatLayout(gameState.seats, heroSeatIndex),
+    [gameState.seats, heroSeatIndex],
+  );
+
+  const openSeats = totalSeats - (room?.playerCount ?? 0);
+
+  const copyLink = () => {
+    if (shareUrl) navigator.clipboard?.writeText(shareUrl);
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="flex items-center justify-between px-6 py-4 bg-gray-900/90 border-b border-white/10">
-        <div>
-          <h1 className="text-xl font-display text-gold">{room?.name || 'PokerLabs'}</h1>
-          <p className="text-white/50 text-sm">
-            Room: {room?.id} · {room?.playerCount}/{room?.maxSeats} players
-            {room?.botCount > 0 && ` · ${room.botCount} bot${room.botCount > 1 ? 's' : ''}`}
-          </p>
+    <div className="h-dvh bg-[#141414] text-white relative overflow-hidden select-none">
+      <div className="absolute top-0 left-0 right-0 z-40 flex items-start justify-between px-4 py-3 pointer-events-none">
+        <div className="pointer-events-auto">
+          <div className="text-lg font-bold tracking-tight text-white/90">
+            DRIPSTER<span className="text-white/40 font-normal"> POKER</span>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="px-3 py-1 rounded-full bg-felt text-sm font-medium">
-            {PHASE_LABELS[gameState.phase] || gameState.phase}
-          </span>
-          {gameState.phase === 'waiting' && isHost && (
-            <>
-              <button
-                onClick={onAddBot}
-                className="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded-xl text-sm font-medium transition"
-              >
-                + Add Bot
-              </button>
-              {(room?.botCount ?? 0) > 0 && (
-                <button
-                  onClick={onRemoveBot}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-sm font-medium transition"
-                >
-                  − Remove Bot
-                </button>
-              )}
-              <button
-                onClick={onStart}
-                className="px-5 py-2 bg-gold hover:bg-gold-light text-gray-900 font-bold rounded-xl transition"
-              >
-                Start Game
-              </button>
-            </>
-          )}
-          <button
-            onClick={onLeave}
-            className="px-4 py-2 bg-red-900/50 hover:bg-red-800/50 rounded-xl text-sm transition"
-          >
-            Leave
-          </button>
+        <div className="text-right text-[11px] text-white/50 space-y-0.5 pointer-events-auto">
+          <div>
+            OWNER: <span className="text-white/80 uppercase">{hostSeat?.name || 'Host'}</span>
+          </div>
+          <div className="font-mono">
+            NLH ~ 10 / 20 · {room?.name || 'Table'} · {PHASE_LABELS[gameState.phase]}
+          </div>
+          <div className="text-white/30 font-mono">
+            {room?.id} · {room?.playerCount}/{totalSeats}
+            {room?.botCount > 0 && ` · ${room.botCount} bots`}
+          </div>
         </div>
-      </header>
+      </div>
 
-      <div className="flex-1 relative flex items-center justify-center p-4">
-        <div className="relative w-full max-w-4xl aspect-[16/10]">
-          {/* Table felt */}
-          <div className="absolute inset-[8%] rounded-[50%] bg-gradient-to-br from-felt-light via-felt to-felt-dark border-8 border-amber-900/60 shadow-2xl shadow-black/50">
-            <div className="absolute inset-4 rounded-[50%] border border-white/10" />
+      <div className="absolute left-3 top-20 z-40 flex flex-col gap-3 pointer-events-auto">
+        <SidebarBtn label="Leave" onClick={onLeave} />
+        {isWaiting && isHost && (
+          <>
+            <SidebarBtn label="+ Bot" onClick={onAddBot} />
+            {(room?.botCount ?? 0) > 0 && <SidebarBtn label="− Bot" onClick={onRemoveBot} />}
+          </>
+        )}
+      </div>
 
-            {/* Pot & community cards */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3">
-              {gameState.pot > 0 && (
-                <div className="bg-black/40 px-4 py-1.5 rounded-full border border-gold/30">
-                  <span className="text-gold-light font-bold">Pot: {gameState.pot.toLocaleString()}</span>
+      <div className="absolute inset-0 flex items-center justify-center p-6 pt-14 pb-28">
+        <div ref={tableRef} className="relative w-full h-full max-w-4xl max-h-[min(100%,720px)] aspect-[16/10]">
+          <div className="absolute inset-[2%] rounded-[50%] bg-[#0d0d0d] shadow-[0_8px_40px_rgba(0,0,0,0.6)]" />
+
+          <div className="absolute inset-[6%] rounded-[50%] pn-felt border-[6px] border-[#0a0a0a] z-10">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-[8%]">
+              {!isWaiting && gameState.pot > 0 && (
+                <div className="px-4 py-1 rounded-full bg-black/55 border border-white/15 shadow-lg">
+                  <span className="text-white text-base font-mono font-bold tracking-wide">
+                    {gameState.pot.toLocaleString()}
+                  </span>
                 </div>
               )}
-              <div className="flex gap-2">
-                {gameState.communityCards?.map((card, i) => (
-                  <Card key={i} card={card} />
-                ))}
-                {gameState.phase !== 'waiting' && gameState.communityCards?.length === 0 && (
-                  <div className="text-white/30 text-sm mt-4">Community cards</div>
-                )}
-              </div>
-              {gameState.handNumber > 0 && (
-                <span className="text-white/40 text-xs">Hand #{gameState.handNumber}</span>
+              {!isWaiting && gameState.communityCards?.length > 0 && (
+                <div className="flex gap-1 sm:gap-1.5 items-end justify-center flex-nowrap w-full max-w-[92%]">
+                  {gameState.communityCards.map((card, i) => (
+                    <div key={i} className="board-card-deal shrink-0" style={{ animationDelay: `${i * 80}ms` }}>
+                      <Card card={card} size="board" />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {gameState.handNumber > 0 && !isWaiting && (
+                <span className="text-white/35 text-xs font-mono tracking-wide">Hand #{gameState.handNumber}</span>
               )}
             </div>
           </div>
 
-          {/* Player seats */}
-          {gameState.seats.map((seat, i) => (
-            <PlayerSeat
-              key={i}
-              seat={seat}
-              isMe={seat.playerId === playerId}
-              position={positions[i] || 'bottom-[8%] left-1/2'}
-            />
-          ))}
+          {isWaiting && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+              <div className="pointer-events-auto bg-white text-gray-800 rounded-lg shadow-2xl w-[min(92%,420px)] overflow-hidden">
+                <div className="px-6 py-5 text-center border-b border-gray-100">
+                  <h2 className="text-xl font-semibold text-gray-700">Waiting for others</h2>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {canStart
+                      ? `${room.playerCount} players at the table${openSeats > 0 ? ` · ${openSeats} seats open` : ''}`
+                      : 'Need at least 2 players'}
+                  </p>
+                </div>
+                <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+                  <div className="p-5 flex flex-col items-stretch text-center">
+                    <p className="text-sm text-gray-500 h-10 flex items-center justify-center px-1">
+                      Share this link with your friends!
+                    </p>
+                    <button
+                      type="button"
+                      onClick={copyLink}
+                      className="w-full py-2.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold uppercase tracking-wide transition"
+                    >
+                      Copy Link
+                    </button>
+                    <p className="text-[10px] text-gray-400 mt-2 font-mono truncate h-4">{room?.id}</p>
+                  </div>
+                  <div className="p-5 flex flex-col items-stretch text-center">
+                    <p className="text-sm text-gray-500 h-10 flex items-center justify-center">
+                      Ready to play?
+                    </p>
+                    <div className="min-h-[42px] flex items-stretch">
+                      {isHost ? (
+                        <button
+                          type="button"
+                          onClick={onStart}
+                          disabled={!canStart}
+                          className="w-full py-2.5 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold uppercase tracking-wide transition"
+                        >
+                          Start Game
+                        </button>
+                      ) : (
+                        <p className="w-full py-2.5 text-sm text-gray-400 flex items-center justify-center">
+                          Waiting for host to start...
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-[10px] mt-2 h-4 invisible" aria-hidden="true">
+                      spacer
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {gameState.seats.map((seat, i) => {
+            if (!seat.occupied) return null;
+            const style = seatPosToStyle(positionMap.get(i));
+            if (!style) return null;
+
+            return (
+              <PlayerSeat
+                key={i}
+                seat={seat}
+                seatNumber={displayOrder.get(i) ?? i + 1}
+                style={style}
+                gamePhase={gameState.phase}
+                isHero={seat.playerId === playerId}
+                isActive={gameState.activeIndex === i && !isWaiting}
+              />
+            );
+          })}
+
+          <TableChipLayer
+            gameState={gameState}
+            layoutMap={positionMap}
+            tableRef={tableRef}
+          />
         </div>
       </div>
 
-      <div className="px-4 pb-6 max-w-2xl mx-auto w-full">
-        <ActionBar
-          gameState={gameState}
-          playerId={playerId}
-          onAction={onAction}
-          onNextHand={onNextHand}
-          isHost={isHost}
-        />
+      {!isWaiting && (
+        <div className="absolute bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-2 bg-gradient-to-t from-black/80 to-transparent">
+          <ActionBar
+            gameState={gameState}
+            playerId={playerId}
+            onAction={onAction}
+            onNextHand={onNextHand}
+            isHost={isHost}
+          />
+        </div>
+      )}
+
+      <div className="absolute bottom-4 left-4 z-30 max-w-xs pointer-events-none">
+        <div className="bg-black/40 rounded px-3 py-2 text-[11px] text-white/35 font-mono">
+          {isWaiting ? 'DRIPSTER deck · Blinds 10/20' : gameState.winMessage || `Phase: ${PHASE_LABELS[gameState.phase]}`}
+        </div>
       </div>
     </div>
+  );
+}
+
+function SidebarBtn({ label, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col items-center gap-1 text-[9px] text-white/40 hover:text-white/70 transition uppercase tracking-wider"
+    >
+      <span className="w-9 h-9 rounded-full bg-[#2a2a2a] border border-white/10 flex items-center justify-center text-xs text-white/60">
+        {label.charAt(0)}
+      </span>
+      {label}
+    </button>
   );
 }

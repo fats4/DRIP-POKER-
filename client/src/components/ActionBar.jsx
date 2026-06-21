@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+const BTN = 'px-5 py-2 text-sm rounded font-bold uppercase tracking-wide transition';
+
 export default function ActionBar({ gameState, playerId, onAction, onNextHand, isHost }) {
   const [raiseAmount, setRaiseAmount] = useState(40);
   const [secondsLeft, setSecondsLeft] = useState(null);
@@ -14,37 +16,33 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
       return;
     }
     const tick = () => {
-      const left = Math.max(0, Math.ceil((gameState.actionDeadline - Date.now()) / 1000));
-      setSecondsLeft(left);
+      setSecondsLeft(Math.max(0, Math.ceil((gameState.actionDeadline - Date.now()) / 1000)));
     };
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
   }, [gameState.actionDeadline, canAct]);
 
+  if (gameState.phase === 'waiting') return null;
+
   if (gameState.phase === 'showdown') {
     return (
-      <div className="flex flex-col items-center gap-3 p-4">
-        <p className="text-gold-light text-lg font-display">{gameState.winMessage}</p>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <p className="text-white/70 text-sm text-center">{gameState.winMessage}</p>
         {isHost && (
-          <button
-            onClick={onNextHand}
-            className="px-8 py-3 bg-gold hover:bg-gold-light text-gray-900 font-bold rounded-xl transition shadow-lg"
-          >
+          <button type="button" onClick={onNextHand} className={`${BTN} bg-emerald-600 hover:bg-emerald-500 text-white shrink-0`}>
             Next Hand
           </button>
         )}
-        {!isHost && <p className="text-white/50 text-sm">Waiting for host to start the next hand...</p>}
+        {!isHost && <span className="text-white/30 text-sm shrink-0">Waiting for host...</span>}
       </div>
     );
   }
 
-  if (gameState.phase === 'waiting') return null;
-
   if (!canAct) {
     return (
-      <div className="text-center text-white/50 py-4">
-        {mySeat?.hasFolded ? 'You folded' : 'Waiting for other players...'}
+      <div className="text-center text-white/35 py-1 text-sm">
+        {mySeat?.hasFolded ? 'You folded — watching the hand' : 'Waiting for other players...'}
       </div>
     );
   }
@@ -52,58 +50,43 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
   return (
     <div className="flex flex-col items-center gap-2">
       {secondsLeft !== null && (
-        <div className={`text-sm font-mono ${secondsLeft <= 5 ? 'text-red-400' : 'text-white/50'}`}>
-          Time left: {secondsLeft}s
+        <div className={`font-mono text-lg font-bold ${secondsLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white/50'}`}>
+          {secondsLeft}s
         </div>
       )}
-    <div className="flex flex-wrap items-center justify-center gap-3 p-4 bg-gray-900/80 rounded-2xl border border-white/10">
-      <button
-        onClick={() => onAction('fold')}
-        className="px-6 py-2.5 bg-red-700 hover:bg-red-600 rounded-xl font-semibold transition"
-      >
-        Fold
-      </button>
-
-      {callAmount === 0 ? (
-        <button
-          onClick={() => onAction('check')}
-          className="px-6 py-2.5 bg-gray-600 hover:bg-gray-500 rounded-xl font-semibold transition"
-        >
-          Check
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <button type="button" onClick={() => onAction('fold')} className={`${BTN} bg-[#3a3a3a] hover:bg-[#4a4a4a] text-white border border-white/10`}>
+          Fold
         </button>
-      ) : (
-        <button
-          onClick={() => onAction('call')}
-          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl font-semibold transition"
-        >
-          Call {callAmount}
-        </button>
-      )}
 
-      <div className="flex items-center gap-2">
-        <input
-          type="number"
-          value={raiseAmount}
-          onChange={(e) => setRaiseAmount(Math.max(gameState.minRaise, parseInt(e.target.value) || 0))}
-          min={gameState.minRaise}
-          step={10}
-          className="w-20 px-2 py-2 rounded-lg bg-gray-800 border border-white/20 text-center"
-        />
-        <button
-          onClick={() => onAction('raise', raiseAmount)}
-          className="px-6 py-2.5 bg-green-700 hover:bg-green-600 rounded-xl font-semibold transition"
-        >
-          Raise
+        {callAmount === 0 ? (
+          <button type="button" onClick={() => onAction('check')} className={`${BTN} bg-emerald-600 hover:bg-emerald-500 text-white`}>
+            Check
+          </button>
+        ) : (
+          <button type="button" onClick={() => onAction('call')} className={`${BTN} bg-emerald-600 hover:bg-emerald-500 text-white`}>
+            Call {callAmount}
+          </button>
+        )}
+
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            value={raiseAmount}
+            onChange={(e) => setRaiseAmount(Math.max(gameState.minRaise, parseInt(e.target.value) || 0))}
+            min={gameState.minRaise}
+            step={10}
+            className="w-16 px-2 py-2 text-sm rounded bg-[#2a2a2a] border border-white/15 text-white text-center focus:outline-none focus:border-emerald-500 font-mono"
+          />
+          <button type="button" onClick={() => onAction('raise', raiseAmount)} className={`${BTN} bg-emerald-600 hover:bg-emerald-500 text-white`}>
+            Raise
+          </button>
+        </div>
+
+        <button type="button" onClick={() => onAction('all-in')} className={`${BTN} bg-emerald-700 hover:bg-emerald-600 text-white`}>
+          All In
         </button>
       </div>
-
-      <button
-        onClick={() => onAction('all-in')}
-        className="px-6 py-2.5 bg-purple-700 hover:bg-purple-600 rounded-xl font-semibold transition"
-      >
-        All In
-      </button>
-    </div>
     </div>
   );
 }

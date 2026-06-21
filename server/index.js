@@ -1,10 +1,15 @@
 import express from 'express';
 import { createServer } from 'http';
 import { networkInterfaces } from 'os';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import { RoomManager } from './game/RoomManager.js';
 import { decideBotAction } from './game/BotAI.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const isProduction = process.env.NODE_ENV === 'production';
 
 function getLocalAddresses() {
   const addresses = [];
@@ -185,6 +190,14 @@ io.on('connection', (socket) => {
     players.delete(playerId);
   });
 });
+
+if (isProduction) {
+  const clientDist = path.join(__dirname, '../client/dist');
+  app.use(express.static(clientDist));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
 
 const HOST = process.env.HOST || '0.0.0.0';
 

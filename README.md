@@ -72,6 +72,57 @@ pokerlabs/
 └── package.json
 ```
 
+## Deploy Online (Public Access)
+
+Your app needs a **hosting server** with WebSocket support (Socket.io). Local Wi‑Fi only works on the same network.
+
+### Option A — Render.com (recommended, free tier)
+
+1. Push code to GitHub: [fats4/DRIP-POKER-](https://github.com/fats4/DRIP-POKER-.git)
+2. Go to [render.com](https://render.com) → **New** → **Web Service**
+3. Connect your GitHub repo `DRIP-POKER-`
+4. Use these settings:
+   - **Build Command:** `npm run install:all && npm run build`
+   - **Start Command:** `npm start`
+   - **Environment:** add `NODE_ENV` = `production`
+5. Click **Deploy**
+
+After deploy you get a public URL like:
+
+`https://drip-poker.onrender.com`
+
+Share that link — anyone in the world can play.
+
+> **Note:** Free tier sleeps after ~15 min idle. First visit may take 30–60 seconds to wake up.
+
+### Option B — Railway / Fly.io / VPS
+
+Same idea: build frontend, run `npm start`, set `NODE_ENV=production`.  
+The server serves both the website and WebSocket on one port.
+
+### Option C — Quick test (temporary URL)
+
+Use [ngrok](https://ngrok.com) while developing locally:
+
+```bash
+npm run dev
+# In another terminal:
+ngrok http 5173
+```
+
+Share the ngrok URL temporarily. Not ideal for production.
+
+### Separate frontend + backend (advanced)
+
+| Service | Host | Example |
+|---------|------|---------|
+| Frontend | Vercel / Netlify | `https://drip-poker.vercel.app` |
+| Backend | Render / Railway | `https://drip-poker-api.onrender.com` |
+
+Set env var when building frontend:
+
+`VITE_SERVER_URL=https://drip-poker-api.onrender.com`
+
 ## Notes
 
 - For educational/entertainment purposes only — not real-money gambling

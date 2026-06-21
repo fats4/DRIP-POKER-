@@ -3,6 +3,9 @@ import { io } from 'socket.io-client';
 
 function getServerUrl() {
   if (import.meta.env.VITE_SERVER_URL) return import.meta.env.VITE_SERVER_URL;
+  // Production: frontend and API share the same host
+  if (import.meta.env.PROD) return window.location.origin;
+  // Dev: Vite on :5173, game server on :3001
   const { protocol, hostname } = window.location;
   return `${protocol}//${hostname}:3001`;
 }
