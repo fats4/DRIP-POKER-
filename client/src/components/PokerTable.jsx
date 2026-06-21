@@ -105,7 +105,7 @@ export default function PokerTable({
       <div className="absolute inset-0 flex items-center justify-center px-2 pt-12 pb-[10.5rem] sm:p-6 sm:pt-14 sm:pb-28">
         <div
           ref={tableRef}
-          className="relative w-full max-w-[min(100%,34rem)] sm:max-w-4xl aspect-[1024/754]"
+          className="relative w-full max-w-[min(100%,34rem)] sm:max-w-4xl aspect-[2405/1772]"
         >
           <img
             src="/poker-table.png"
