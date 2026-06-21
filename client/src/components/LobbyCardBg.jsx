@@ -20,7 +20,7 @@ const CARDS = [
 
 export default function LobbyCardBg() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden>
+    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none opacity-40 dark:opacity-100" aria-hidden>
       {CARDS.map((card, i) => (
         <div
           key={i}

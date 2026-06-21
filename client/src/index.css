@@ -4,8 +4,14 @@
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #141414;
+  background-color: #f4f4f5;
+  color: #111827;
   -webkit-tap-highlight-color: transparent;
+}
+
+.dark body {
+  background-color: #000000;
+  color: #ffffff;
 }
 
 .safe-top {
@@ -96,10 +102,14 @@ body {
 }
 
 .lobby-bg {
-  background: #050505;
+  background: #f4f4f5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+.dark .lobby-bg {
+  background: #050505;
 }
 
 .lobby-text {

@@ -30,20 +30,20 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
   if (gameState.phase === 'showdown') {
     return (
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
-        <p className="text-white/70 text-sm text-center">{gameState.winMessage}</p>
+        <p className="text-gray-700 dark:text-white/70 text-sm text-center">{gameState.winMessage}</p>
         {isHost && (
           <button type="button" onClick={onNextHand} className={`${BTN} bg-emerald-600 hover:bg-emerald-500 text-white shrink-0 w-full sm:w-auto`}>
             Next Hand
           </button>
         )}
-        {!isHost && <span className="text-white/30 text-sm shrink-0">Waiting for host...</span>}
+        {!isHost && <span className="text-gray-400 dark:text-white/30 text-sm shrink-0">Waiting for host...</span>}
       </div>
     );
   }
 
   if (!canAct) {
     return (
-      <div className="text-center text-white/35 py-2 text-sm max-w-lg mx-auto">
+      <div className="text-center text-gray-500 dark:text-white/35 py-2 text-sm max-w-lg mx-auto">
         {mySeat?.hasFolded ? 'You folded — watching the hand' : 'Waiting for other players...'}
       </div>
     );
@@ -52,7 +52,7 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
   return (
     <div className="flex flex-col items-center gap-2 w-full max-w-lg mx-auto">
       {secondsLeft !== null && (
-        <div className={`font-mono text-xl sm:text-lg font-bold ${secondsLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white/50'}`}>
+        <div className={`font-mono text-xl sm:text-lg font-bold ${secondsLeft <= 5 ? 'text-red-500 dark:text-red-400 animate-pulse' : 'text-gray-500 dark:text-white/50'}`}>
           {secondsLeft}s
         </div>
       )}
@@ -85,7 +85,7 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
             onChange={(e) => setRaiseAmount(Math.max(gameState.minRaise, parseInt(e.target.value) || 0))}
             min={gameState.minRaise}
             step={10}
-            className="flex-1 min-h-[44px] px-3 py-2 text-base rounded-lg bg-[#2a2a2a] border border-white/15 text-white text-center focus:outline-none focus:border-emerald-500 font-mono"
+            className="flex-1 min-h-[44px] px-3 py-2 text-base rounded-lg bg-white dark:bg-[#2a2a2a] border border-black/15 dark:border-white/15 text-gray-900 dark:text-white text-center focus:outline-none focus:border-emerald-500 font-mono"
           />
           <button type="button" onClick={() => onAction('all-in')} className={`${BTN} flex-1 bg-emerald-700 hover:bg-emerald-600 text-white`}>
             All In
@@ -116,7 +116,7 @@ export default function ActionBar({ gameState, playerId, onAction, onNextHand, i
             onChange={(e) => setRaiseAmount(Math.max(gameState.minRaise, parseInt(e.target.value) || 0))}
             min={gameState.minRaise}
             step={10}
-            className="w-16 px-2 py-2 text-sm rounded-lg bg-[#2a2a2a] border border-white/15 text-white text-center focus:outline-none focus:border-emerald-500 font-mono"
+            className="w-16 px-2 py-2 text-sm rounded-lg bg-white dark:bg-[#2a2a2a] border border-black/15 dark:border-white/15 text-gray-900 dark:text-white text-center focus:outline-none focus:border-emerald-500 font-mono"
           />
           <button type="button" onClick={() => onAction('raise', raiseAmount)} className={`${BTN} bg-emerald-600 hover:bg-emerald-500 text-white`}>
             Raise

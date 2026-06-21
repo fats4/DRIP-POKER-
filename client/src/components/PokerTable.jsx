@@ -3,6 +3,8 @@ import Card from './Card';
 import PlayerSeat from './PlayerSeat';
 import ActionBar from './ActionBar';
 import TableChipLayer from './TableChipLayer';
+import DripLabLogo from './DripLabLogo';
+import ThemeToggle from './ThemeToggle';
 import { buildSeatLayout, seatPosToStyle } from '../utils/seatLayout';
 
 const PHASE_LABELS = {
@@ -46,37 +48,37 @@ export default function PokerTable({
   };
 
   return (
-    <div className="h-dvh bg-black text-white relative overflow-hidden select-none">
+    <div className="h-dvh bg-zinc-100 dark:bg-black text-gray-900 dark:text-white relative overflow-hidden select-none transition-colors duration-200">
       <div className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 pointer-events-none safe-top">
-        <div className="pointer-events-auto flex items-center gap-2 min-w-0">
-          <div className="text-base sm:text-lg font-bold tracking-tight text-white/90 truncate">
-            DRIPSTER<span className="text-white/40 font-normal"> POKER</span>
-          </div>
+        <div className="pointer-events-auto flex items-center gap-3 min-w-0">
+          <DripLabLogo size="sm" className="sm:hidden" />
+          <DripLabLogo size="md" className="hidden sm:block" />
         </div>
 
         <div className="pointer-events-auto flex items-center gap-2 shrink-0">
-          <div className="hidden sm:block text-right text-[11px] text-white/50 space-y-0.5">
+          <ThemeToggle />
+          <div className="hidden sm:block text-right text-[11px] text-gray-500 dark:text-white/50 space-y-0.5">
             <div>
-              OWNER: <span className="text-white/80 uppercase">{hostSeat?.name || 'Host'}</span>
+              OWNER: <span className="text-gray-800 dark:text-white/80 uppercase">{hostSeat?.name || 'Host'}</span>
             </div>
             <div className="font-mono">
               NLH ~ 10 / 20 · {room?.name || 'Table'} · {PHASE_LABELS[gameState.phase]}
             </div>
-            <div className="text-white/30 font-mono">
+            <div className="text-gray-400 dark:text-white/30 font-mono">
               {room?.id} · {room?.playerCount}/{totalSeats}
               {room?.botCount > 0 && ` · ${room.botCount} bots`}
             </div>
           </div>
-          <div className="sm:hidden flex flex-col items-end gap-1 text-[10px] text-white/45 font-mono leading-tight">
-            <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+          <div className="sm:hidden flex flex-col items-end gap-1 text-[10px] text-gray-500 dark:text-white/45 font-mono leading-tight">
+            <span className="px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
               {PHASE_LABELS[gameState.phase]} · {room?.playerCount}/{totalSeats}
             </span>
-            <span className="text-white/30 truncate max-w-[9rem]">{room?.id}</span>
+            <span className="text-gray-400 dark:text-white/30 truncate max-w-[9rem]">{room?.id}</span>
           </div>
           <button
             type="button"
             onClick={onLeave}
-            className="sm:hidden px-3 py-1.5 rounded-lg bg-[#2a2a2a] border border-white/10 text-[10px] font-semibold uppercase tracking-wide text-white/70"
+            className="sm:hidden px-3 py-1.5 rounded-lg bg-black/5 dark:bg-[#2a2a2a] border border-black/10 dark:border-white/10 text-[10px] font-semibold uppercase tracking-wide text-gray-700 dark:text-white/70"
           >
             Leave
           </button>
@@ -217,7 +219,7 @@ export default function PokerTable({
       </div>
 
       {!isWaiting && (
-        <div className="absolute bottom-0 left-0 right-0 z-40 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pb-4 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 z-40 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pb-4 bg-gradient-to-t from-zinc-200/95 via-zinc-100/80 to-transparent dark:from-black/90 dark:via-black/70 dark:to-transparent">
           <ActionBar
             gameState={gameState}
             playerId={playerId}
@@ -229,7 +231,7 @@ export default function PokerTable({
       )}
 
       <div className="absolute bottom-4 left-4 z-30 max-w-xs pointer-events-none hidden sm:block">
-        <div className="bg-black/40 rounded px-3 py-2 text-[11px] text-white/35 font-mono">
+        <div className="bg-black/5 dark:bg-black/40 rounded px-3 py-2 text-[11px] text-gray-500 dark:text-white/35 font-mono">
           {isWaiting ? 'DRIPSTER deck · Blinds 10/20' : gameState.winMessage || `Phase: ${PHASE_LABELS[gameState.phase]}`}
         </div>
       </div>
@@ -242,9 +244,9 @@ function SidebarBtn({ label, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center gap-1 text-[9px] text-white/40 hover:text-white/70 transition uppercase tracking-wider"
+      className="flex flex-col items-center gap-1 text-[9px] text-gray-500 dark:text-white/40 hover:text-gray-800 dark:hover:text-white/70 transition uppercase tracking-wider"
     >
-      <span className="w-9 h-9 rounded-full bg-[#2a2a2a] border border-white/10 flex items-center justify-center text-xs text-white/60">
+      <span className="w-9 h-9 rounded-full bg-black/5 dark:bg-[#2a2a2a] border border-black/10 dark:border-white/10 flex items-center justify-center text-xs text-gray-700 dark:text-white/60">
         {label.charAt(0)}
       </span>
       {label}
@@ -257,7 +259,7 @@ function MobileIconBtn({ label, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="px-3 py-1.5 rounded-lg bg-[#2a2a2a] border border-white/10 text-[10px] font-semibold uppercase tracking-wide text-white/70"
+      className="px-3 py-1.5 rounded-lg bg-black/5 dark:bg-[#2a2a2a] border border-black/10 dark:border-white/10 text-[10px] font-semibold uppercase tracking-wide text-gray-700 dark:text-white/70"
     >
       {label}
     </button>
