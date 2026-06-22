@@ -1,15 +1,27 @@
 import Card from './Card';
 import { getSeatCardSize, getSeatStructure } from '../utils/seatLayout';
+import { getHolePair } from '../utils/holeCards';
 
-function HoleCards({ cards, size, hidden, folded, horizontal }) {
+function HoleCards({ cards, size, hidden, folded, horizontal, isPair }) {
+  const ringClass = isPair && !hidden
+    ? 'ring-2 ring-amber-400/90 shadow-[0_0_12px_rgba(251,191,36,0.45)]'
+    : '';
+
   return (
-    <div className={`flex items-center justify-center ${folded ? 'opacity-30 grayscale' : ''}`}>
-      <div className={horizontal ? 'rotate-[-6deg]' : 'rotate-[-8deg]'}>
-        <Card card={hidden ? { hidden: true } : cards[0]} size={size} />
+    <div className={`flex flex-col items-center ${folded ? 'opacity-30 grayscale' : ''}`}>
+      <div className={`flex items-center justify-center ${isPair && !hidden ? 'relative' : ''}`}>
+        <div className={horizontal ? 'rotate-[-6deg]' : 'rotate-[-8deg]'}>
+          <Card card={hidden ? { hidden: true } : cards[0]} size={size} className={ringClass} />
+        </div>
+        <div className={`${horizontal ? 'rotate-[6deg] -ml-2' : 'rotate-[8deg] -ml-2'}`}>
+          <Card card={hidden ? { hidden: true } : cards[1]} size={size} className={ringClass} />
+        </div>
       </div>
-      <div className={`${horizontal ? 'rotate-[6deg] -ml-2' : 'rotate-[8deg] -ml-2'}`}>
-        <Card card={hidden ? { hidden: true } : cards[1]} size={size} />
-      </div>
+      {isPair && !hidden && (
+        <span className="mt-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-[8px] sm:text-[9px] font-bold uppercase tracking-wide text-amber-300 whitespace-nowrap">
+          Pocket Pair
+        </span>
+      )}
     </div>
   );
 }
@@ -27,6 +39,8 @@ export default function PlayerSeat({
   const cardSize = getSeatCardSize(isHero);
   const structure = getSeatStructure(style, isHero);
   const showCards = holeCards?.length > 0 && !isWaiting;
+  const cardsHidden = isWaiting || (holeCards?.[0]?.hidden && !isHero);
+  const holePair = !cardsHidden ? getHolePair(holeCards) : null;
 
   if (!occupied) {
     return (
@@ -80,6 +94,11 @@ export default function PlayerSeat({
                 {statusText}
               </div>
             )}
+            {holePair && (
+              <div className="text-[7px] sm:text-[8px] text-amber-300 font-semibold truncate mt-0.5">
+                {holePair.label}
+              </div>
+            )}
             {handResult && (
               <div className="text-[7px] text-emerald-400 truncate mt-0.5">{handResult}</div>
             )}
@@ -92,9 +111,10 @@ export default function PlayerSeat({
             <HoleCards
               cards={holeCards}
               size={cardSize}
-              hidden={isWaiting || (holeCards[0]?.hidden && !isHero)}
+              hidden={cardsHidden}
               folded={hasFolded}
               horizontal={structure.horizontalCards}
+              isPair={!!holePair}
             />
           </div>
         )}

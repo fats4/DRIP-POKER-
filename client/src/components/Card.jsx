@@ -9,7 +9,7 @@ const SIZES = {
   board: 'w-[clamp(3.25rem,13vmin,6.5rem)] aspect-[5/7]',
 };
 
-export default function Card({ card, size = 'md', small = false }) {
+export default function Card({ card, size = 'md', small = false, className = '' }) {
   const sizeClass = small ? SIZES.sm : SIZES[size] || SIZES.md;
 
   if (!card) return null;
@@ -17,7 +17,7 @@ export default function Card({ card, size = 'md', small = false }) {
   if (card.hidden) {
     return (
       <div
-        className={`${sizeClass} rounded-lg overflow-hidden card-deal shadow-lg shadow-black/50 ring-1 ring-black/20`}
+        className={`${sizeClass} rounded-lg overflow-hidden card-deal shadow-lg shadow-black/50 ring-1 ring-black/20 ${className}`}
       >
         <img
           src={getCardBackSrc()}
@@ -41,7 +41,7 @@ export default function Card({ card, size = 'md', small = false }) {
 
   return (
     <div
-      className={`${sizeClass} rounded-lg overflow-hidden card-deal shadow-lg shadow-black/50 ring-1 ring-black/20 hover:ring-drip-purple/50 transition-shadow`}
+      className={`${sizeClass} rounded-lg overflow-hidden card-deal shadow-lg shadow-black/50 ring-1 ring-black/20 hover:ring-drip-purple/50 transition-shadow ${className}`}
     >
       <img
         src={src}
